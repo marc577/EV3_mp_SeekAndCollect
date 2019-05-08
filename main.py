@@ -33,9 +33,16 @@ def close_grabber():
     motor_grabber.run_target(5, 110, Stop.HOLD, False)
     returnToHome()
 
+#release cubes
+def open_grabber():
+    motor_grabber.run_target(5, -110, Stop.HOLD, False)
+    robot.drive_time((-1*drive_speed), 0, 1000)
+
 #navigate home
 def returnToHome():
+    #TODO drive me home
     robo.drive_time(drive_speed,180,1000)
+    open_grabber()
 
 #check color of cube and start grabbing or move away
 def check_color():
