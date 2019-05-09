@@ -20,6 +20,7 @@ drive_speed = 100           # mm/s
 rotation_speed = 45         # deg/s
 calibration_surface = -1
 myColor = -1                # color to collect
+dropZoneColor = -1          # color of surface to drop cubes
 
 #don't crash into obstacles
 def collision_avoidance():
@@ -40,12 +41,30 @@ def open_grabber():
 
 #navigate home
 def returnToHome():
-    #TODO drive me home
-    robo.drive_time(drive_speed,180,1000)
-    open_grabber()
+    while True:
+        collision_avoidance()
+        if check_color_surface():
+            #if robo found home and dropped cube, exit and continue with main routine
+            break
+        robot.drive_time(drive_speed, 90, 1000)
+        brick.display.clear()
+        robot.drive(drive_speed, 0)
+
+#check color of surface to drop item
+#assumes color sensor faces downwards to ground - otherwise install 2nd sensor!
+def check_color_surface():
+    if color_sensor.color() != calibration_surface:
+        robot.stop()
+        if color_sensor.color() == dropZoneColor:
+            open_grabber()
+            return True
+        else:
+            #move on and search drop zone
+            robot.drive_time((-1*drive_speed), 0, 1000)
+            return False
 
 #check color of cube and start grabbing or move away
-def check_color():
+def check_color_brick():
     if color_sensor.color() != calibration_surface:
         robot.stop()
         if color_sensor.color() == myColor:
@@ -54,12 +73,12 @@ def check_color():
             #move away from object
             robot.drive_time((-1*drive_speed), 0, 1000)
 
-myColor = color_sensor.color # set my color to collect
-#TODO Save homeloc and route home
+#main program
+myColor = color_sensor.color() # set my color to collect
+dropZoneColor = Color.BLUE # set color of my home surface
 while True:
-
     collision_avoidance()
-    check_ball()
-    robot.drive_time(drive_speed, 90, 1000)
+    check_color_brick()
+    robot.drive_time(drive_speed, 90, 1000) # continue here after returnToHome
     brick.display.clear()
     robot.drive(drive_speed, 0)
